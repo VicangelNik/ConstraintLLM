@@ -1,0 +1,163 @@
+{
+  "nVaccines": 6,
+  "groups": [
+    {
+      "age": 4,
+      "gender": 2,
+      "health": 1,
+      "exposure": 3,
+      "size": 127
+    },
+    {
+      "age": 2,
+      "gender": 2,
+      "health": 0,
+      "exposure": 0,
+      "size": 64
+    },
+    {
+      "age": 3,
+      "gender": 1,
+      "health": 2,
+      "exposure": 1,
+      "size": 114
+    },
+    {
+      "age": 3,
+      "gender": 0,
+      "health": 0,
+      "exposure": 2,
+      "size": 37
+    },
+    {
+      "age": 7,
+      "gender": 2,
+      "health": 1,
+      "exposure": 3,
+      "size": 164
+    },
+    {
+      "age": 3,
+      "gender": 1,
+      "health": 0,
+      "exposure": 2,
+      "size": 195
+    },
+    {
+      "age": 5,
+      "gender": 1,
+      "health": 0,
+      "exposure": 2,
+      "size": 119
+    },
+    {
+      "age": 4,
+      "gender": 1,
+      "health": 0,
+      "exposure": 1,
+      "size": 82
+    },
+    {
+      "age": 2,
+      "gender": 1,
+      "health": 1,
+      "exposure": 0,
+      "size": 40
+    },
+    {
+      "age": 1,
+      "gender": 1,
+      "health": 0,
+      "exposure": 3,
+      "size": 81
+    },
+    {
+      "age": 3,
+      "gender": 1,
+      "health": 0,
+      "exposure": 3,
+      "size": 34
+    },
+    {
+      "age": 3,
+      "gender": 1,
+      "health": 1,
+      "exposure": 2,
+      "size": 184
+    },
+    {
+      "age": 7,
+      "gender": 1,
+      "health": 1,
+      "exposure": 1,
+      "size": 45
+    },
+    {
+      "age": 1,
+      "gender": 0,
+      "health": 2,
+      "exposure": 3,
+      "size": 15
+    },
+    {
+      "age": 2,
+      "gender": 2,
+      "health": 1,
+      "exposure": 2,
+      "size": 143
+    },
+    {
+      "age": 2,
+      "gender": 0,
+      "health": 1,
+      "exposure": 3,
+      "size": 161
+    }
+  ],
+  "ageBounds": [
+    {
+      "lb": 0,
+      "ub": 5
+    },
+    {
+      "lb": 0,
+      "ub": 8
+    },
+    {
+      "lb": 3,
+      "ub": 10
+    },
+    {
+      "lb": 1,
+      "ub": 7
+    },
+    {
+      "lb": 1,
+      "ub": 2
+    },
+    {
+      "lb": 0,
+      "ub": 3
+    },
+    {
+      "lb": 1,
+      "ub": 1
+    }
+  ],
+  "limits": {
+    "minSize": 3,
+    "maxDiff": 21,
+    "maxShare": 4
+  },
+  "health_information": [
+    1,
+    4,
+    5
+  ],
+  "exposure_information": [
+    3,
+    5,
+    6,
+    7
+  ]
+}

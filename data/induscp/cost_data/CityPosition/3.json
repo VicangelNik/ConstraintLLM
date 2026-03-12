@@ -1,0 +1,95 @@
+{
+  "n": 12,
+  "roads": [
+    {
+      "src": 0,
+      "dst": 1,
+      "distance": 15
+    },
+    {
+      "src": 1,
+      "dst": 2,
+      "distance": 12
+    },
+    {
+      "src": 2,
+      "dst": 3,
+      "distance": 10
+    },
+    {
+      "src": 3,
+      "dst": 4,
+      "distance": 18
+    },
+    {
+      "src": 4,
+      "dst": 5,
+      "distance": 14
+    },
+    {
+      "src": 5,
+      "dst": 6,
+      "distance": 16
+    },
+    {
+      "src": 6,
+      "dst": 7,
+      "distance": 11
+    },
+    {
+      "src": 7,
+      "dst": 8,
+      "distance": 13
+    },
+    {
+      "src": 8,
+      "dst": 9,
+      "distance": 17
+    },
+    {
+      "src": 9,
+      "dst": 10,
+      "distance": 12
+    },
+    {
+      "src": 10,
+      "dst": 11,
+      "distance": 9
+    },
+    {
+      "src": 11,
+      "dst": 0,
+      "distance": 20
+    },
+    {
+      "src": 0,
+      "dst": 6,
+      "distance": 22
+    },
+    {
+      "src": 1,
+      "dst": 7,
+      "distance": 19
+    },
+    {
+      "src": 2,
+      "dst": 8,
+      "distance": 16
+    },
+    {
+      "src": 3,
+      "dst": 9,
+      "distance": 14
+    },
+    {
+      "src": 4,
+      "dst": 10,
+      "distance": 13
+    },
+    {
+      "src": 5,
+      "dst": 11,
+      "distance": 15
+    }
+  ]
+}

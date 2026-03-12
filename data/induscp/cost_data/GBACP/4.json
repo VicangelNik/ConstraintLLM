@@ -1,0 +1,26 @@
+{
+  "nPeriods": 2,
+  "minCourses": 1,
+  "maxCourses": 2,
+  "w1": 1,
+  "w2": 1,
+  "courseLoads": [
+    2,
+    3
+  ],
+  "curricula": [
+    [
+      0
+    ],
+    [
+      1
+    ]
+  ],
+  "precedences": [],
+  "undesirables": [
+    [
+      0,
+      1
+    ]
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "gen_max": [
+    [
+      90,
+      140
+    ],
+    [
+      180,
+      230
+    ]
+  ],
+  "dispatch_cost": 12,
+  "gen_min": [
+    [
+      40,
+      70
+    ],
+    [
+      90,
+      110
+    ]
+  ],
+  "init_commitment": [
+    0,
+    1
+  ],
+  "startup_cost": [
+    600,
+    1200
+  ],
+  "shutdown_cost": [
+    400,
+    800
+  ],
+  "max_ramp_rate": [
+    25,
+    35
+  ],
+  "demand": [
+    [
+      70,
+      110
+    ],
+    [
+      140,
+      190
+    ]
+  ],
+  "shed_cost": [
+    150,
+    250
+  ],
+  "min_down": [
+    3,
+    4
+  ],
+  "max_num_start": [
+    2,
+    3
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "onRequests": [],
+  "offRequests": [],
+  "maxShifts": [
+    3,
+    3,
+    3
+  ],
+  "minTimes": [
+    40
+  ],
+  "maxTimes": [
+    48
+  ],
+  "kmin": 1,
+  "kmax": 3,
+  "kday": 1,
+  "maxWeekends": 2,
+  "daysOff": [
+    0,
+    1
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "n": 5,
+  "roads": [
+    {
+      "src": 4,
+      "dst": 0,
+      "distance": 10
+    },
+    {
+      "src": 0,
+      "dst": 1,
+      "distance": 10
+    },
+    {
+      "src": 1,
+      "dst": 2,
+      "distance": 10
+    },
+    {
+      "src": 2,
+      "dst": 3,
+      "distance": 10
+    },
+    {
+      "src": 3,
+      "dst": 4,
+      "distance": 10
+    },
+    {
+      "src": 0,
+      "dst": 2,
+      "distance": 20
+    },
+    {
+      "src": 1,
+      "dst": 3,
+      "distance": 20
+    },
+    {
+      "src": 2,
+      "dst": 4,
+      "distance": 20
+    },
+    {
+      "src": 0,
+      "dst": 3,
+      "distance": 30
+    },
+    {
+      "src": 1,
+      "dst": 4,
+      "distance": 30
+    }
+  ]
+}

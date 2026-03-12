@@ -1,0 +1,27 @@
+{
+  "nMachines": 1,
+  "tasks": [
+    [
+      0
+    ],
+    [
+      1
+    ]
+  ],
+  "operations": [
+    [
+      0
+    ],
+    [
+      1
+    ]
+  ],
+  "machines": [
+    0,
+    0
+  ],
+  "durations": [
+    5,
+    10
+  ]
+}

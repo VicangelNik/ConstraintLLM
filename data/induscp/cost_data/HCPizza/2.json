@@ -1,0 +1,14 @@
+{
+  "minIngredients": 1,
+  "maxSize": 4,
+  "pizza": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      0
+    ]
+  ]
+}

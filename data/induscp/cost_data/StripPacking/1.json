@@ -1,0 +1,16 @@
+{
+  "container": [
+    10,
+    10
+  ],
+  "rectangles": [
+    {
+      "width": 2,
+      "height": 3
+    },
+    {
+      "width": 4,
+      "height": 1
+    }
+  ]
+}

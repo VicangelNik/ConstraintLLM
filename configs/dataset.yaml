@@ -1,0 +1,5 @@
+dataset:
+  name: IndusCP
+  statements_path: data/induscp/statements.json
+  problem_list_path: data/induscp/problem_list.txt
+  cost_data_root: data/induscp/cost_data

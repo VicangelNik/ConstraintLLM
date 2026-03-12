@@ -1,0 +1,29 @@
+{
+  "requirements": [
+    5,
+    5,
+    5
+  ],
+  "candidateSets": [
+    [
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      0,
+      1
+    ],
+    [
+      0,
+      1,
+      1
+    ]
+  ],
+  "candidateWeights": [
+    2,
+    3,
+    4
+  ]
+}

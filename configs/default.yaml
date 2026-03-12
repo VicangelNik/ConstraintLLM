@@ -1,0 +1,12 @@
+model:
+  api_base: http://127.0.0.1:8000/v1
+  api_key: EMPTY
+  model_name: qwen2_5_32B
+runtime:
+  time_limit: 60
+  topk: 4
+  revision_times: 2
+  cases_per_problem: 5
+  request_timeout: 180
+retrieval:
+  corpus_path: data/knowledge_base.json

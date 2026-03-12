@@ -1,0 +1,17 @@
+{
+  "nAgents": 1,
+  "horizon": 6,
+  "width": 2,
+  "depth": 2,
+  "height": 2,
+  "building": [
+    [
+      0,
+      0
+    ],
+    [
+      1,
+      0
+    ]
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "H": 10,
+  "T": 20,
+  "stackBefore": 1,
+  "limits": {
+    "sumMaxDelay": 100,
+    "maxReclaimingGap": 5,
+    "dailyStacking": 10,
+    "nReclaimers": 2,
+    "maxDelay": 10
+  },
+  "coeffs": {
+    "tonnage": 100,
+    "time": 1,
+    "length": 1,
+    "hour": 1,
+    "meter": 1
+  },
+  "eta": [
+    0,
+    5,
+    10
+  ],
+  "piles": [
+    [
+      0,
+      2,
+      3
+    ],
+    [
+      0,
+      1,
+      2
+    ],
+    [
+      1,
+      2,
+      3
+    ],
+    [
+      2,
+      1,
+      2
+    ]
+  ]
+}

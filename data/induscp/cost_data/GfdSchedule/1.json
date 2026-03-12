@@ -1,0 +1,155 @@
+{
+  "nFacilities": 3,
+  "maxItemsPerDay": 2,
+  "maxDay": 15,
+  "items": [
+    {
+      "kind": 0,
+      "facility": [
+        0,
+        1
+      ],
+      "producedDay": 3,
+      "deadlineDay": 10
+    },
+    {
+      "kind": 0,
+      "facility": [
+        0,
+        2
+      ],
+      "producedDay": 2,
+      "deadlineDay": 9
+    },
+    {
+      "kind": 1,
+      "facility": [
+        1
+      ],
+      "producedDay": 4,
+      "deadlineDay": 12
+    },
+    {
+      "kind": 1,
+      "facility": [
+        1,
+        2
+      ],
+      "producedDay": 5,
+      "deadlineDay": 13
+    },
+    {
+      "kind": 2,
+      "facility": [
+        2
+      ],
+      "producedDay": 3,
+      "deadlineDay": 11
+    },
+    {
+      "kind": 2,
+      "facility": [
+        0,
+        1
+      ],
+      "producedDay": 1,
+      "deadlineDay": 8
+    },
+    {
+      "kind": 0,
+      "facility": [
+        0
+      ],
+      "producedDay": 2,
+      "deadlineDay": 7
+    },
+    {
+      "kind": 1,
+      "facility": [
+        1,
+        2
+      ],
+      "producedDay": 3,
+      "deadlineDay": 10
+    },
+    {
+      "kind": 2,
+      "facility": [
+        2
+      ],
+      "producedDay": 4,
+      "deadlineDay": 14
+    },
+    {
+      "kind": 1,
+      "facility": [
+        0,
+        2
+      ],
+      "producedDay": 1,
+      "deadlineDay": 9
+    },
+    {
+      "kind": 2,
+      "facility": [
+        1,
+        2
+      ],
+      "producedDay": 2,
+      "deadlineDay": 10
+    },
+    {
+      "kind": 0,
+      "facility": [
+        0,
+        1
+      ],
+      "producedDay": 3,
+      "deadlineDay": 12
+    },
+    {
+      "kind": 1,
+      "facility": [
+        1
+      ],
+      "producedDay": 4,
+      "deadlineDay": 13
+    },
+    {
+      "kind": 2,
+      "facility": [
+        0,
+        1
+      ],
+      "producedDay": 1,
+      "deadlineDay": 11
+    },
+    {
+      "kind": 0,
+      "facility": [
+        1,
+        2
+      ],
+      "producedDay": 3,
+      "deadlineDay": 14
+    },
+    {
+      "kind": 1,
+      "facility": [
+        0,
+        2
+      ],
+      "producedDay": 2,
+      "deadlineDay": 10
+    },
+    {
+      "kind": 2,
+      "facility": [
+        0,
+        1
+      ],
+      "producedDay": 3,
+      "deadlineDay": 12
+    }
+  ]
+}

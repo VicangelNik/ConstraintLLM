@@ -1,0 +1,7 @@
+{
+  "id": "night",
+  "length": 8,
+  "forbiddenFollowingShifts": [
+    "morning"
+  ]
+}

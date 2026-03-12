@@ -1,0 +1,34 @@
+{
+  "nTrainings": 1,
+  "nMaxJobs": 1,
+  "engineerSkills": [
+    [
+      1,
+      0
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "engineerLocations": [
+    0,
+    1
+  ],
+  "jobs": [
+    [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      0,
+      0
+    ]
+  ]
+}

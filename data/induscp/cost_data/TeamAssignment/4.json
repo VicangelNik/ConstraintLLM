@@ -1,0 +1,21 @@
+{
+  "nTeams": 2,
+  "nBoards": 1,
+  "requests": 3,
+  "rating": [
+    1,
+    2
+  ],
+  "singleRequests": [
+    [
+      0,
+      1
+    ]
+  ],
+  "doubleRequests": [
+    [
+      0,
+      1
+    ]
+  ]
+}

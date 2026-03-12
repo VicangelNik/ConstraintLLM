@@ -1,0 +1,53 @@
+{
+  "nTasks": 5,
+  "nMachines": 3,
+  "horizon": 20,
+  "nAdditionalTasks": 1,
+  "jobs": [
+    0,
+    0,
+    1,
+    1,
+    2
+  ],
+  "durations": [
+    4,
+    2,
+    3,
+    5,
+    1
+  ],
+  "machines": [
+    [
+      0,
+      1
+    ],
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "add_starts": [
+    10
+  ],
+  "add_ends": [
+    15
+  ],
+  "add_machines": [
+    1
+  ],
+  "weights": [
+    1,
+    2
+  ]
+}

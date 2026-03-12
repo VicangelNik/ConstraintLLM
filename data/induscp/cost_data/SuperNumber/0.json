@@ -1,0 +1,102 @@
+{
+  "tasks": 15,
+  "workstations": 3,
+  "processing_time": [
+    1,
+    2,
+    3,
+    1,
+    2,
+    3,
+    1,
+    2,
+    3,
+    1,
+    2,
+    3,
+    1,
+    2,
+    3
+  ],
+  "constraints": [
+    {
+      "type": "AllDifferent"
+    },
+    {
+      "type": "divisibility",
+      "divisor": 2,
+      "digits": [
+        0,
+        1
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 3,
+      "digits": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 4,
+      "digits": [
+        2,
+        3
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 5,
+      "digits": [
+        4
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 6,
+      "digits": [
+        5
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 7,
+      "digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 8,
+      "digits": [
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "type": "divisibility",
+      "divisor": 9,
+      "digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    }
+  ]
+}

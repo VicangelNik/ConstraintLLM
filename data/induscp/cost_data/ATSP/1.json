@@ -1,0 +1,56 @@
+{
+  "pro_setup": 10,
+  "seq_setup": 5,
+  "maxColors": 2,
+  "minCycles": 1,
+  "maxCycles": 2,
+  "nJobs": 2,
+  "nColors": 2,
+  "nLines": 1,
+  "compatibilities": [
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "programs": [
+    [
+      1,
+      20
+    ],
+    [
+      2,
+      15
+    ]
+  ],
+  "moulds": [
+    {
+      "available": 3,
+      "program": 1,
+      "line": 1
+    },
+    {
+      "available": 3,
+      "program": 2,
+      "line": 1
+    }
+  ],
+  "demands": [
+    [
+      1,
+      10,
+      1,
+      1
+    ],
+    [
+      1,
+      10,
+      2,
+      2
+    ]
+  ]
+}

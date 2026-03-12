@@ -1,0 +1,19 @@
+{
+  "products": [
+    [
+      4,
+      8
+    ],
+    [
+      6,
+      12
+    ],
+    [
+      1,
+      25
+    ]
+  ],
+  "stackLimit": 2,
+  "stockPieceSize": 12,
+  "nCuts": 4
+}

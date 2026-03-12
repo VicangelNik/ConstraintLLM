@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "durations": [
+        2,
+        3
+      ],
+      "resources": [
+        0,
+        1
+      ],
+      "releaseDate": 0,
+      "dueDate": 10
+    },
+    {
+      "durations": [
+        1,
+        4
+      ],
+      "resources": [
+        1,
+        0
+      ],
+      "releaseDate": 0,
+      "dueDate": 10
+    }
+  ]
+}

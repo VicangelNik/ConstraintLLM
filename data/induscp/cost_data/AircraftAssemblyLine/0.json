@@ -1,0 +1,170 @@
+{
+  "takt": 10,
+  "areas": [
+    {
+      "capacity": 2,
+      "tasks": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "capacity": 1,
+      "tasks": [
+        4,
+        5
+      ]
+    },
+    {
+      "capacity": 1,
+      "tasks": [
+        6,
+        7
+      ]
+    }
+  ],
+  "stations": [
+    {
+      "machines": [
+        1,
+        0,
+        0
+      ],
+      "maxOperators": 2
+    },
+    {
+      "machines": [
+        0,
+        1,
+        1
+      ],
+      "maxOperators": 2
+    }
+  ],
+  "tasks": [
+    {
+      "duration": 3,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        1,
+        0,
+        0
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 2,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        1,
+        0,
+        0
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 2,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        1,
+        0,
+        0
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 3,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        1,
+        0,
+        0
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 2,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        0,
+        1,
+        0
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 2,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        0,
+        1,
+        0
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 2,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        0,
+        0,
+        1
+      ],
+      "neutralizedAreas": []
+    },
+    {
+      "duration": 3,
+      "nOperators": 1,
+      "usedAreaRooms": [
+        0,
+        0,
+        1
+      ],
+      "neutralizedAreas": []
+    }
+  ],
+  "tasksPerMachine": [
+    [
+      0,
+      1,
+      2,
+      3
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      6,
+      7
+    ]
+  ],
+  "precedences": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      7
+    ]
+  ]
+}

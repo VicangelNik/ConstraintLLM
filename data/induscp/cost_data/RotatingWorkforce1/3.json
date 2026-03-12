@@ -1,0 +1,45 @@
+{
+  "weekLength": 3,
+  "nWorkers": 2,
+  "daysOff": [
+    [
+      1,
+      2
+    ]
+  ],
+  "workBlockLength": [
+    [
+      1,
+      2
+    ]
+  ],
+  "needs": [
+    [
+      1,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      0
+    ]
+  ],
+  "shifts": [
+    {
+      "blockMin": 1,
+      "blockMax": 1
+    },
+    {
+      "blockMin": 1,
+      "blockMax": 2
+    }
+  ],
+  "forbids": [
+    [
+      0,
+      1,
+      0
+    ]
+  ]
+}

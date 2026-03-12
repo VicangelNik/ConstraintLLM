@@ -1,0 +1,205 @@
+{
+  "n": 8,
+  "roads": [
+    {
+      "src": 0,
+      "dst": 1,
+      "distance": 120
+    },
+    {
+      "src": 0,
+      "dst": 2,
+      "distance": 85
+    },
+    {
+      "src": 0,
+      "dst": 3,
+      "distance": 150
+    },
+    {
+      "src": 0,
+      "dst": 4,
+      "distance": 95
+    },
+    {
+      "src": 0,
+      "dst": 5,
+      "distance": 110
+    },
+    {
+      "src": 0,
+      "dst": 6,
+      "distance": 130
+    },
+    {
+      "src": 0,
+      "dst": 7,
+      "distance": 70
+    },
+    {
+      "src": 1,
+      "dst": 2,
+      "distance": 65
+    },
+    {
+      "src": 1,
+      "dst": 3,
+      "distance": 90
+    },
+    {
+      "src": 1,
+      "dst": 4,
+      "distance": 140
+    },
+    {
+      "src": 1,
+      "dst": 5,
+      "distance": 75
+    },
+    {
+      "src": 1,
+      "dst": 6,
+      "distance": 105
+    },
+    {
+      "src": 1,
+      "dst": 7,
+      "distance": 125
+    },
+    {
+      "src": 2,
+      "dst": 3,
+      "distance": 115
+    },
+    {
+      "src": 2,
+      "dst": 4,
+      "distance": 80
+    },
+    {
+      "src": 2,
+      "dst": 5,
+      "distance": 135
+    },
+    {
+      "src": 2,
+      "dst": 6,
+      "distance": 100
+    },
+    {
+      "src": 2,
+      "dst": 7,
+      "distance": 145
+    },
+    {
+      "src": 3,
+      "dst": 4,
+      "distance": 60
+    },
+    {
+      "src": 3,
+      "dst": 5,
+      "distance": 125
+    },
+    {
+      "src": 3,
+      "dst": 6,
+      "distance": 95
+    },
+    {
+      "src": 3,
+      "dst": 7,
+      "distance": 110
+    },
+    {
+      "src": 4,
+      "dst": 5,
+      "distance": 70
+    },
+    {
+      "src": 4,
+      "dst": 6,
+      "distance": 150
+    },
+    {
+      "src": 4,
+      "dst": 7,
+      "distance": 85
+    },
+    {
+      "src": 5,
+      "dst": 6,
+      "distance": 115
+    },
+    {
+      "src": 5,
+      "dst": 7,
+      "distance": 90
+    },
+    {
+      "src": 6,
+      "dst": 7,
+      "distance": 140
+    },
+    {
+      "src": 1,
+      "dst": 0,
+      "distance": 120
+    },
+    {
+      "src": 2,
+      "dst": 0,
+      "distance": 85
+    },
+    {
+      "src": 3,
+      "dst": 0,
+      "distance": 150
+    },
+    {
+      "src": 4,
+      "dst": 0,
+      "distance": 95
+    },
+    {
+      "src": 5,
+      "dst": 0,
+      "distance": 110
+    },
+    {
+      "src": 6,
+      "dst": 0,
+      "distance": 130
+    },
+    {
+      "src": 7,
+      "dst": 0,
+      "distance": 70
+    },
+    {
+      "src": 3,
+      "dst": 1,
+      "distance": 90
+    },
+    {
+      "src": 4,
+      "dst": 1,
+      "distance": 140
+    },
+    {
+      "src": 5,
+      "dst": 1,
+      "distance": 75
+    },
+    {
+      "src": 6,
+      "dst": 1,
+      "distance": 105
+    },
+    {
+      "src": 7,
+      "dst": 1,
+      "distance": 125
+    }
+  ]
+}

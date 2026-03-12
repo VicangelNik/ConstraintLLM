@@ -1,0 +1,38 @@
+{
+  "nVaccines": 2,
+  "groups": [
+    {
+      "age": 1,
+      "gender": 0,
+      "health": 0,
+      "exposure": 0,
+      "size": 10
+    },
+    {
+      "age": 2,
+      "gender": 1,
+      "health": 1,
+      "exposure": 1,
+      "size": 10
+    }
+  ],
+  "ageBounds": [
+    {
+      "lb": 0,
+      "ub": 2
+    }
+  ],
+  "limits": [
+    5,
+    0,
+    1
+  ],
+  "health_information": [
+    1,
+    2
+  ],
+  "exposure_information": [
+    1,
+    2
+  ]
+}

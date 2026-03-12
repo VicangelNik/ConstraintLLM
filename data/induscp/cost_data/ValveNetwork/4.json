@@ -1,0 +1,32 @@
+{
+  "nNodes": 4,
+  "nSteps": 3,
+  "connections": [
+    [
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2
+    ]
+  ],
+  "flow": [
+    0,
+    10,
+    0,
+    5
+  ],
+  "nActions": 2,
+  "nPersons": 2,
+  "MOVE": 0,
+  "OPEN": 1,
+  "ME": 0,
+  "ELEPHANT": 1
+}
