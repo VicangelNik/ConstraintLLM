@@ -25,6 +25,10 @@ class Settings:
     revision_times: int
     cases_per_problem: int
     retrieval_corpus: str
+    embedding_api_base: str
+    embedding_api_key: str
+    embedding_model: str
+    embedding_batch_size: int
     prompt_problem_max_chars: int
     retrieval_example_problem_max_chars: int
     retrieval_example_code_max_chars: int
@@ -61,6 +65,10 @@ def get_settings() -> Settings:
         revision_times=_get_int_env("CONSTRAINTLLM_REVISION_TIMES", 2),
         cases_per_problem=_get_int_env("CONSTRAINTLLM_CASES_PER_PROBLEM", 5),
         retrieval_corpus=os.environ.get("CONSTRAINTLLM_RETRIEVAL_CORPUS", default_retrieval_corpus).strip(),
+        embedding_api_base=os.environ.get("CONSTRAINTLLM_EMBEDDING_API_BASE", os.environ.get("CONSTRAINTLLM_API_BASE", "http://127.0.0.1:8000/v1")).rstrip("/"),
+        embedding_api_key=os.environ.get("CONSTRAINTLLM_EMBEDDING_API_KEY", os.environ.get("CONSTRAINTLLM_API_KEY", "EMPTY")),
+        embedding_model=os.environ.get("CONSTRAINTLLM_EMBEDDING_MODEL", "text-embedding-3-small").strip(),
+        embedding_batch_size=_get_int_env("CONSTRAINTLLM_EMBEDDING_BATCH_SIZE", 32),
         prompt_problem_max_chars=_get_int_env("CONSTRAINTLLM_PROMPT_PROBLEM_MAX_CHARS", 12000),
         retrieval_example_problem_max_chars=_get_int_env("CONSTRAINTLLM_RETRIEVAL_EXAMPLE_PROBLEM_MAX_CHARS", 1800),
         retrieval_example_code_max_chars=_get_int_env("CONSTRAINTLLM_RETRIEVAL_EXAMPLE_CODE_MAX_CHARS", 2800),

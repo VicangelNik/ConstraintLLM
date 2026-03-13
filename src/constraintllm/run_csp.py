@@ -13,11 +13,12 @@ from tqdm import tqdm
 from .classify_tag import classify_tag
 from .config import COT_SYSTEM_MESSAGE, OUTPUT_ROOT, SYSTEM_MESSAGE_DIRECT, TOT_THOUGHT_SYSTEM_MESSAGE, get_settings
 from .data_loader import load_induscp_records, load_retrieval_corpus
+from .embedding_retrieval import EmbeddingRetriever
 from .llm import get_llm
 from .profiler_tool import profiler
 from .run_code import evaluate_generated_code
 from .tag_based_retrieval import tag_based_retrieval
-from .utils import dump_json, ensure_dir, extract_python_code, lexical_topk, sanitize_name
+from .utils import dump_json, ensure_dir, extract_python_code, sanitize_name
 
 
 def _get_int_env(name: str, default_value: int) -> int:
@@ -96,19 +97,21 @@ def build_reference_prefix(examples: list[dict], settings) -> str:
     return "\n\n".join(lines) + "\n\n"
 
 
-def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings) -> tuple[list[dict], list[str]]:
+def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[list[dict], list[str]]:
     """Prepare retrieved examples and tags for the selected method."""
     if method == "RAG":
-        return lexical_topk(problem_text, retrieval_corpus, settings.topk), []
+        if embedding_retriever is None:
+            raise ValueError("RAG requires an embedding retriever")
+        return embedding_retriever.topk(problem_text, settings.topk), []
     if method in {"CARM", "TOT"}:
         tags = classify_tag(problem_text, preset_constraints=record.constraints, llm=llm)
         return tag_based_retrieval(tags, retrieval_corpus, settings.topk), tags
     return [], []
 
 
-def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings) -> tuple[str, list[str], list[dict]]:
+def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[str, list[str], list[dict]]:
     """Build the input prompt for the selected method."""
-    examples, tags = prepare_examples(method, problem_text, record, retrieval_corpus, llm, settings)
+    examples, tags = prepare_examples(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
     prompt = build_reference_prefix(examples, settings) + problem_text if examples else problem_text
     return prompt, tags, examples
 
@@ -239,10 +242,16 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
     records = _slice_records(records, max_items)
 
     retrieval_corpus = []
+    embedding_retriever: EmbeddingRetriever | None = None
     if method in {"RAG", "CARM", "TOT"}:
         if not settings.retrieval_corpus:
             raise ValueError(f"{method} requires CONSTRAINTLLM_RETRIEVAL_CORPUS")
         retrieval_corpus = load_retrieval_corpus(settings.retrieval_corpus)
+    if method == "RAG":
+        if not settings.embedding_model:
+            raise ValueError("RAG requires CONSTRAINTLLM_EMBEDDING_MODEL")
+        embedding_retriever = EmbeddingRetriever(settings)
+        embedding_retriever.build_index(retrieval_corpus)
 
     total_score = 0
     total_fix_success = 0
@@ -253,7 +262,7 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
     for record in tqdm(records, total=len(records)):
         try:
             problem_text = clip_text(record.problem, settings.prompt_problem_max_chars)
-            prompt, tags, _ = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings)
+            prompt, tags, _ = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
 
             if method == "TOT":
                 code = generate_code_with_tot(record, problem_text, prompt, llm, settings)

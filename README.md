@@ -86,7 +86,7 @@ This release provides the following methods:
 
 - `DIRECT`: directly generate PyCSP3 code from the problem statement.
 - `COT`: generate PyCSP3 code with a chain-of-thought style coding prompt.
-- `RAG`: retrieve reference examples by lexical overlap between the current problem statement and the retrieval corpus.
+- `RAG`: retrieve reference examples by embedding similarity between the current problem statement and the retrieval corpus.
 - `CARM`: retrieve reference examples by constraint-tag overlap.
 - `TOT`: retrieve references, generate multiple modelling plans, turn them into candidate programs, and keep the best candidate under a lightweight quick check.
 

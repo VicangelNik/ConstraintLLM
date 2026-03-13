@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Iterable
 
 
 def ensure_dir(path: Path) -> None:
@@ -44,20 +43,3 @@ def collect_case_pairs(problem_dir: Path, max_cases: int) -> list[tuple[Path, Pa
     if max_cases > 0:
         return pairs[:max_cases]
     return pairs
-
-
-def tokenize(text: str) -> set[str]:
-    """Generate tokens for simple lexical retrieval."""
-    return set(re.findall(r"[A-Za-z_][A-Za-z0-9_]+", text.lower()))
-
-
-def lexical_topk(query: str, documents: Iterable[dict], topk: int) -> list[dict]:
-    """Perform simple retrieval using token overlap."""
-    query_tokens = tokenize(query)
-    scored: list[tuple[tuple[int, int], dict]] = []
-    for document in documents:
-        doc_tokens = tokenize(str(document.get("problem", "")))
-        overlap = len(query_tokens & doc_tokens)
-        scored.append(((-overlap, len(doc_tokens)), document))
-    scored.sort(key=lambda item: item[0])
-    return [item[1] for item in scored[:topk]]
