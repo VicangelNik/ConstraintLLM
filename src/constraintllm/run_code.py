@@ -103,6 +103,7 @@ def run_program(tmp_dir: Path, command: list[str], code: str, time_limit: int) -
     code_file_path.write_text(code, encoding="utf-8")
     process = None
     markers = extract_cleanup_markers(command)
+    start = time.perf_counter()
     try:
         env = os.environ.copy()
         java_opts = env.get("JAVA_TOOL_OPTIONS", "")
@@ -118,10 +119,16 @@ def run_program(tmp_dir: Path, command: list[str], code: str, time_limit: int) -
             env=env,
         )
         stdout, stderr = process.communicate(timeout=time_limit)
+        elapsed = time.perf_counter() - start
+        print(f"[solver] status=ok elapsed={elapsed:.2f}s cmd={' '.join(command)}")
         return stdout, stderr
     except subprocess.TimeoutExpired:
+        elapsed = time.perf_counter() - start
+        print(f"[solver] status=timeout elapsed={elapsed:.2f}s cmd={' '.join(command)}")
         return "Timeout: solver exceeded the time limit", "Timeout"
     except Exception as exc:
+        elapsed = time.perf_counter() - start
+        print(f"[solver] status=error elapsed={elapsed:.2f}s error={type(exc).__name__} cmd={' '.join(command)}")
         return f"Error: {exc}", str(exc)
     finally:
         if process is not None:
@@ -162,6 +169,7 @@ def build_fix_prompt(problem_text: str, code: str, input_text: str, expected_out
 
 def request_code_fix(llm: OpenAICompatibleLLM, problem_text: str, code: str, input_text: str, expected_output: str, output_text: str, error_text: str) -> str | None:
     """Ask the model to repair the code."""
+    start = time.perf_counter()
     try:
         raw_text = llm(
             FIX_CODE_SYSTEM_MESSAGE,
@@ -170,7 +178,11 @@ def request_code_fix(llm: OpenAICompatibleLLM, problem_text: str, code: str, inp
         )
     except Exception as exc:
         # Abort this repair attempt on timeout or transient API errors without failing the full evaluation.
+        elapsed = time.perf_counter() - start
+        print(f"[fix] status=failed elapsed={elapsed:.2f}s error={type(exc).__name__}")
         return None
+    elapsed = time.perf_counter() - start
+    print(f"[fix] status=ok elapsed={elapsed:.2f}s")
     return extract_python_code(raw_text)
 
 
@@ -188,9 +200,11 @@ def evaluate_generated_code(record, code: str, problem_text: str, llm: OpenAICom
     details = []
     total_score = 0
     successful_fix_count = 0
+    eval_start = time.perf_counter()
 
     for input_path, output_path in case_pairs:
         if output_path is None:
+            print(f"[case] problem={record.name} input={input_path.name} skipped=no_expected_output")
             continue
 
         try:
@@ -203,10 +217,17 @@ def evaluate_generated_code(record, code: str, problem_text: str, llm: OpenAICom
             stdout = ""
             stderr = ""
             extracted_cost = None
+            case_start = time.perf_counter()
 
             for attempt in range(settings.revision_times + 1):
+                round_start = time.perf_counter()
                 stdout, stderr = run_program(tmp_dir, command, current_code, settings.time_limit)
                 extracted_cost = extract_cost(stdout)
+                round_elapsed = time.perf_counter() - round_start
+                print(
+                    f"[case] problem={record.name} input={input_path.name} round={attempt + 1}/{settings.revision_times + 1} "
+                    f"solver_elapsed={round_elapsed:.2f}s matched={extracted_cost == expected_output}"
+                )
                 if extracted_cost == expected_output:
                     break
                 if attempt >= settings.revision_times:
@@ -218,10 +239,15 @@ def evaluate_generated_code(record, code: str, problem_text: str, llm: OpenAICom
                 used_fix = True
 
             score = 1 if extracted_cost == expected_output else 0
+            case_elapsed = time.perf_counter() - case_start
             if score:
                 total_score += 1
                 if used_fix:
                     successful_fix_count += 1
+            print(
+                f"[case] problem={record.name} input={input_path.name} score={score} "
+                f"used_fix={used_fix} total_elapsed={case_elapsed:.2f}s"
+            )
 
             details.append(
                 {
@@ -233,10 +259,17 @@ def evaluate_generated_code(record, code: str, problem_text: str, llm: OpenAICom
                     "stdout": stdout,
                     "stderr": stderr,
                     "code": current_code,
+                    "case_elapsed_sec": round(case_elapsed, 3),
+                    "used_fix": used_fix,
                 }
             )
         except Exception as exc:
             # Record zero for a failed case and continue so one case does not break the whole problem.
+            case_elapsed = time.perf_counter() - case_start if "case_start" in locals() else None
+            print(
+                f"[case] problem={record.name} input={input_path.name} status=exception "
+                f"elapsed={(case_elapsed or 0):.2f}s error={type(exc).__name__}"
+            )
             details.append(
                 {
                     "file_path": record.name,
@@ -247,11 +280,19 @@ def evaluate_generated_code(record, code: str, problem_text: str, llm: OpenAICom
                     "stdout": "",
                     "stderr": f"case_error: {exc}",
                     "code": code,
+                    "case_elapsed_sec": round(case_elapsed, 3) if case_elapsed is not None else None,
+                    "used_fix": False,
                 }
             )
 
+    eval_elapsed = time.perf_counter() - eval_start
+    print(
+        f"[eval] problem={record.name} score={total_score} fix_success={successful_fix_count} "
+        f"cases={len(details)} total_elapsed={eval_elapsed:.2f}s"
+    )
     return {
         "score": total_score,
         "fix_success": successful_fix_count,
         "details": details,
+        "eval_elapsed_sec": round(eval_elapsed, 3),
     }

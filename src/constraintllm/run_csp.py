@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 from tqdm import tqdm
 
@@ -288,6 +289,7 @@ def generate_code_with_tot(record, problem_text: str, base_prompt: str, llm, set
 @profiler
 def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
     """Run one experiment pass."""
+    experiment_start = time.perf_counter()
     settings = get_settings()
     llm = get_llm(settings)
     records = load_induscp_records()
@@ -312,16 +314,34 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
     skipped = 0
 
     for record in tqdm(records, total=len(records)):
+        record_start = time.perf_counter()
         try:
             problem_text = clip_text(record.problem, settings.prompt_problem_max_chars)
-            prompt, tags, _ = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
+            retrieval_start = time.perf_counter()
+            prompt, tags, examples = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
+            retrieval_elapsed = time.perf_counter() - retrieval_start
+            print(
+                f"[record] problem={record.name} stage=retrieval method={method} "
+                f"elapsed={retrieval_elapsed:.2f}s tags={len(tags)} examples={len(examples)}"
+            )
 
+            generation_start = time.perf_counter()
             if method == "TOT":
                 code = generate_code_with_tot(record, problem_text, prompt, llm, settings)
             else:
                 code = generate_code_for_method(method, llm, prompt)
+            generation_elapsed = time.perf_counter() - generation_start
+            print(
+                f"[record] problem={record.name} stage=generation method={method} "
+                f"elapsed={generation_elapsed:.2f}s code_ok={bool(code)}"
+            )
             if not code:
                 skipped += 1
+                total_elapsed = time.perf_counter() - record_start
+                print(
+                    f"[record] problem={record.name} stage=done status=skipped "
+                    f"elapsed={total_elapsed:.2f}s reason=code_generation_failed_or_timed_out"
+                )
                 all_details.append(
                     {
                         "file_path": record.name,
@@ -332,18 +352,35 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
                         "stdout": "",
                         "stderr": "record_error: code_generation_failed_or_timed_out",
                         "code": "",
+                        "record_elapsed_sec": round(total_elapsed, 3),
+                        "retrieval_elapsed_sec": round(retrieval_elapsed, 3),
+                        "generation_elapsed_sec": round(generation_elapsed, 3),
                     }
                 )
                 continue
 
+            evaluation_start = time.perf_counter()
             result = evaluate_generated_code(record, code, problem_text, llm=llm, settings=settings)
+            evaluation_elapsed = time.perf_counter() - evaluation_start
             total_score += result["score"]
             total_fix_success += result["fix_success"]
             all_details.extend(result["details"])
             processed += 1
+            total_elapsed = time.perf_counter() - record_start
+            print(
+                f"[record] problem={record.name} stage=done status=processed score={result['score']} "
+                f"fix_success={result['fix_success']} retrieval={retrieval_elapsed:.2f}s "
+                f"generation={generation_elapsed:.2f}s evaluation={evaluation_elapsed:.2f}s "
+                f"total={total_elapsed:.2f}s"
+            )
         except Exception as exc:
             # Skip a failed problem so the current shard can continue running.
             skipped += 1
+            total_elapsed = time.perf_counter() - record_start
+            print(
+                f"[record] problem={record.name} stage=done status=exception "
+                f"elapsed={total_elapsed:.2f}s error={type(exc).__name__}"
+            )
             all_details.append(
                 {
                     "file_path": record.name,
@@ -354,10 +391,12 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
                     "stdout": "",
                     "stderr": f"record_error: {exc}",
                     "code": "",
+                    "record_elapsed_sec": round(total_elapsed, 3),
                 }
             )
             continue
 
+    experiment_elapsed = time.perf_counter() - experiment_start
     summary = {
         "dataset": "IndusCP",
         "method": method,
@@ -373,7 +412,12 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
         "skipped_problems": skipped,
         "total_score": total_score,
         "total_fix_success": total_fix_success,
+        "experiment_elapsed_sec": round(experiment_elapsed, 3),
     }
+    print(
+        f"[experiment] method={method} processed={processed} skipped={skipped} "
+        f"score={total_score} fix_success={total_fix_success} elapsed={experiment_elapsed:.2f}s"
+    )
     return summary, all_details
 
 
