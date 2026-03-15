@@ -11,11 +11,12 @@ import sys
 from tqdm import tqdm
 
 from .classify_tag import classify_tag
-from .config import COT_SYSTEM_MESSAGE, OUTPUT_ROOT, SYSTEM_MESSAGE_DIRECT, TOT_THOUGHT_SYSTEM_MESSAGE, get_settings
+from .config import CARM_WITH_CONSTRAINTS_SYSTEM_MESSAGE, COT_SYSTEM_MESSAGE, OUTPUT_ROOT, SYSTEM_MESSAGE_DIRECT, TOT_THOUGHT_SYSTEM_MESSAGE, get_settings
 from .data_loader import load_induscp_records, load_retrieval_corpus
 from .embedding_retrieval import EmbeddingRetriever
 from .llm import get_llm
 from .profiler_tool import profiler
+from .reranker import rerank_documents
 from .run_code import evaluate_generated_code
 from .tag_based_retrieval import tag_based_retrieval
 from .utils import dump_json, ensure_dir, extract_python_code, sanitize_name
@@ -97,6 +98,42 @@ def build_reference_prefix(examples: list[dict], settings) -> str:
     return "\n\n".join(lines) + "\n\n"
 
 
+def build_carm_reference_prefix(examples: list[dict], settings) -> str:
+    """Build the original TAG-style reference prefix."""
+    if not examples:
+        return ""
+    lines = ["Here are some similar questions and codes for reference:"]
+    current_length = len(lines[0])
+    for index, item in enumerate(examples, start=1):
+        example_problem = clip_text(item.get("problem", "").strip(), settings.retrieval_example_problem_max_chars)
+        example_code = clip_text(item.get("code", "").strip(), settings.retrieval_example_code_max_chars)
+        problem_block = f"description{index}: {example_problem}"
+        code_block = f"result code{index}:\n```python\n{example_code}\n```"
+        projected = current_length + len(problem_block) + len(code_block) + 4
+        if projected > settings.retrieval_total_max_chars:
+            break
+        lines.append(problem_block)
+        lines.append(code_block)
+        current_length = projected
+    return "\n\n".join(lines) + "\n\n"
+
+
+def _carm_rerank_examples(problem_text: str, examples: list[dict], settings) -> list[dict]:
+    """Optionally rerank TAG-retrieved examples with an external reranker."""
+    endpoint = os.environ.get("CONSTRAINTLLM_RERANK_ENDPOINT", "").strip()
+    if not endpoint or not examples:
+        return examples
+    documents = [item.get("problem", "") for item in examples]
+    reranked_documents = rerank_documents(problem_text, documents, endpoint=endpoint, topk=settings.topk)
+    ranked_examples: list[dict] = []
+    for document in reranked_documents:
+        for item in examples:
+            if item.get("problem", "") == document and item not in ranked_examples:
+                ranked_examples.append(item)
+                break
+    return ranked_examples or examples[: settings.topk]
+
+
 def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[list[dict], list[str]]:
     """Prepare retrieved examples and tags for the selected method."""
     if method == "RAG":
@@ -105,14 +142,20 @@ def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: l
         return embedding_retriever.topk(problem_text, settings.topk), []
     if method in {"CARM", "TOT"}:
         tags = classify_tag(problem_text, preset_constraints=record.constraints, llm=llm)
-        return tag_based_retrieval(tags, retrieval_corpus, settings.topk), tags
+        tag_topk = settings.topk * 2 if os.environ.get("CONSTRAINTLLM_RERANK_ENDPOINT", "").strip() else settings.topk
+        examples = tag_based_retrieval(tags, retrieval_corpus, tag_topk)
+        examples = _carm_rerank_examples(problem_text, examples, settings)
+        return list(reversed(examples[: settings.topk])), tags
     return [], []
 
 
 def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[str, list[str], list[dict]]:
     """Build the input prompt for the selected method."""
     examples, tags = prepare_examples(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
-    prompt = build_reference_prefix(examples, settings) + problem_text if examples else problem_text
+    if method == "CARM":
+        prompt = build_carm_reference_prefix(examples, settings) + "The problem:\n" + problem_text if examples else "The problem:\n" + problem_text
+    else:
+        prompt = build_reference_prefix(examples, settings) + problem_text if examples else problem_text
     return prompt, tags, examples
 
 
@@ -128,6 +171,15 @@ def generate_code(llm, system_prompt: str, prompt: str) -> str | None:
     except Exception:
         # Return no code on generation timeout or API errors so the caller can skip the item.
         return None
+
+
+def generate_code_for_method(method: str, llm, prompt: str) -> str | None:
+    """Generate code with the method-specific fallback strategy."""
+    system_prompt = COT_SYSTEM_MESSAGE if method == "COT" else SYSTEM_MESSAGE_DIRECT
+    code = generate_code(llm, system_prompt, prompt)
+    if code or method != "CARM":
+        return code
+    return generate_code(llm, CARM_WITH_CONSTRAINTS_SYSTEM_MESSAGE, prompt)
 
 
 def generate_thought(llm, prompt: str, temperature: float) -> str:
@@ -267,8 +319,7 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
             if method == "TOT":
                 code = generate_code_with_tot(record, problem_text, prompt, llm, settings)
             else:
-                system_prompt = COT_SYSTEM_MESSAGE if method == "COT" else SYSTEM_MESSAGE_DIRECT
-                code = generate_code(llm, system_prompt, prompt)
+                code = generate_code_for_method(method, llm, prompt)
             if not code:
                 skipped += 1
                 all_details.append(

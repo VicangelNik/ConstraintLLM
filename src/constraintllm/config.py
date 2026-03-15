@@ -62,7 +62,7 @@ def get_settings() -> Settings:
         request_retry_backoff=_get_int_env("CONSTRAINTLLM_REQUEST_RETRY_BACKOFF", 5),
         time_limit=_get_int_env("CONSTRAINTLLM_TIME_LIMIT", 60),
         topk=_get_int_env("CONSTRAINTLLM_TOPK", 4),
-        revision_times=_get_int_env("CONSTRAINTLLM_REVISION_TIMES", 2),
+        revision_times=_get_int_env("CONSTRAINTLLM_REVISION_TIMES", 4),
         cases_per_problem=_get_int_env("CONSTRAINTLLM_CASES_PER_PROBLEM", 5),
         retrieval_corpus=os.environ.get("CONSTRAINTLLM_RETRIEVAL_CORPUS", default_retrieval_corpus).strip(),
         embedding_api_base=os.environ.get("CONSTRAINTLLM_EMBEDDING_API_BASE", os.environ.get("CONSTRAINTLLM_API_BASE", "http://127.0.0.1:8000/v1")).rstrip("/"),
@@ -116,4 +116,15 @@ The repaired code must stay faithful to the original problem meaning.
 
 CARM_TAG_CLASSIFICATION_SYSTEM_MESSAGE = """Read the problem statement and infer a short list of likely constraint-programming tags.
 Return only a JSON array of strings, such as [\"AllDifferent\", \"Sum\"].
+"""
+
+CARM_WITH_CONSTRAINTS_SYSTEM_MESSAGE = """You are an expert in constraint programming and PyCSP3.
+Convert the given problem statement into correct PyCSP3 code.
+Rules:
+- Do not solve the problem manually.
+- Only output Python code in a single ```python``` block.
+- The code must read the instance from the built-in `data` variable.
+- The code must be runnable with PyCSP3 using `python model.py -data=<file.json> -solve`.
+- Prefer clear variable names and simple, verifiable constraints.
+- When appropriate, consider standard PyCSP3 global constraints such as AllDifferent, Element, Count, Sum, Maximum, Minimum, Table, Cumulative, NoOverlap, Circuit, Regular, Cardinality and Lex.
 """
