@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import time
 
-from openai import APITimeoutError, APIConnectionError, InternalServerError, OpenAI
+from openai import APIConnectionError, APIStatusError, APITimeoutError, InternalServerError, OpenAI, RateLimitError
 
 from .config import Settings, get_settings
 
@@ -47,11 +47,24 @@ class OpenAICompatibleLLM:
                     f"thinking={'off' if disable_thinking else 'default'} elapsed={elapsed:.2f}s"
                 )
                 return (message.content or "").strip()
-            except (APITimeoutError, APIConnectionError, InternalServerError) as exc:
+            except APIStatusError as exc:
                 elapsed = time.perf_counter() - request_start
                 print(
                     f"[llm] model={self.settings.model_name} attempt={attempt + 1} "
-                    f"thinking={'off' if disable_thinking else 'default'} failed_after={elapsed:.2f}s error={type(exc).__name__}"
+                    f"failed_after={elapsed:.2f}s status={exc.status_code} error={type(exc).__name__}: {exc.message}"
+                )
+                # Rate limits and server errors are transient; other 4xx errors (bad URL, key, model) are not.
+                if not isinstance(exc, (RateLimitError, InternalServerError)):
+                    raise
+                last_error = exc
+                if attempt >= self.settings.request_retries:
+                    break
+                time.sleep(max(1, self.settings.request_retry_backoff) * (attempt + 1))
+            except (APITimeoutError, APIConnectionError) as exc:
+                elapsed = time.perf_counter() - request_start
+                print(
+                    f"[llm] model={self.settings.model_name} attempt={attempt + 1} "
+                    f"thinking={'off' if disable_thinking else 'default'} failed_after={elapsed:.2f}s error={type(exc).__name__}: {exc}"
                 )
                 last_error = exc
                 if attempt >= self.settings.request_retries:
