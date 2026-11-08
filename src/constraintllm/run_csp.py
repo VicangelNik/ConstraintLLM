@@ -79,12 +79,13 @@ def clip_text(text: str, max_chars: int) -> str:
     return text[:max_chars] + "\n...[truncated]..."
 
 
-def build_reference_prefix(examples: list[dict], settings) -> str:
-    """Build a context prefix from retrieved examples."""
+def build_reference_prefix(examples: list[dict], settings) -> tuple[str, list[dict]]:
+    """Build a context prefix from retrieved examples and return it with the examples that fit."""
     if not examples:
-        return ""
+        return "", []
     lines = ["Here are some reference problems and PyCSP3 models:"]
     current_length = len(lines[0])
+    included: list[dict] = []
     for index, item in enumerate(examples, start=1):
         example_problem = clip_text(item.get("problem", "").strip(), settings.retrieval_example_problem_max_chars)
         example_code = clip_text(item.get("code", "").strip(), settings.retrieval_example_code_max_chars)
@@ -95,16 +96,18 @@ def build_reference_prefix(examples: list[dict], settings) -> str:
             break
         lines.append(problem_block)
         lines.append(code_block)
+        included.append(item)
         current_length = projected
-    return "\n\n".join(lines) + "\n\n"
+    return "\n\n".join(lines) + "\n\n", included
 
 
-def build_carm_reference_prefix(examples: list[dict], settings) -> str:
-    """Build the original TAG-style reference prefix."""
+def build_carm_reference_prefix(examples: list[dict], settings) -> tuple[str, list[dict]]:
+    """Build the original TAG-style reference prefix and return it with the examples that fit."""
     if not examples:
-        return ""
+        return "", []
     lines = ["Here are some similar questions and codes for reference:"]
     current_length = len(lines[0])
+    included: list[dict] = []
     for index, item in enumerate(examples, start=1):
         example_problem = clip_text(item.get("problem", "").strip(), settings.retrieval_example_problem_max_chars)
         example_code = clip_text(item.get("code", "").strip(), settings.retrieval_example_code_max_chars)
@@ -115,8 +118,9 @@ def build_carm_reference_prefix(examples: list[dict], settings) -> str:
             break
         lines.append(problem_block)
         lines.append(code_block)
+        included.append(item)
         current_length = projected
-    return "\n\n".join(lines) + "\n\n"
+    return "\n\n".join(lines) + "\n\n", included
 
 
 def _carm_rerank_examples(problem_text: str, examples: list[dict], settings) -> list[dict]:
@@ -150,14 +154,17 @@ def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: l
     return [], []
 
 
-def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[str, list[str], list[dict]]:
+def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[str, list[str], list[dict], list[dict]]:
     """Build the input prompt for the selected method."""
     examples, tags = prepare_examples(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
     if method == "CARM":
-        prompt = build_carm_reference_prefix(examples, settings) + "The problem:\n" + problem_text if examples else "The problem:\n" + problem_text
+        prefix, used = build_carm_reference_prefix(examples, settings)
+        prompt = prefix + "The problem:\n" + problem_text if examples else "The problem:\n" + problem_text
     else:
-        prompt = build_reference_prefix(examples, settings) + problem_text if examples else problem_text
-    return prompt, tags, examples
+        prefix, used = build_reference_prefix(examples, settings)
+        prompt = prefix + problem_text if examples else problem_text
+    dropped = [item for item in examples if item not in used]
+    return prompt, tags, used, dropped
 
 
 def generate_code(llm, system_prompt: str, prompt: str) -> str | None:
@@ -315,14 +322,18 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
 
     for record in tqdm(records, total=len(records)):
         record_start = time.perf_counter()
+        retrieved_examples: list[str] = []
+        dropped_examples: list[str] = []
         try:
             problem_text = clip_text(record.problem, settings.prompt_problem_max_chars)
             retrieval_start = time.perf_counter()
-            prompt, tags, examples = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
+            prompt, tags, examples, dropped = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
             retrieval_elapsed = time.perf_counter() - retrieval_start
+            retrieved_examples = [item.get("name", "") for item in examples]
+            dropped_examples = [item.get("name", "") for item in dropped]
             print(
                 f"[record] problem={record.name} stage=retrieval method={method} "
-                f"elapsed={retrieval_elapsed:.2f}s tags={len(tags)} examples={len(examples)}"
+                f"elapsed={retrieval_elapsed:.2f}s tags={len(tags)} examples={len(examples)} dropped={len(dropped)}"
             )
 
             generation_start = time.perf_counter()
@@ -355,6 +366,8 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
                         "record_elapsed_sec": round(total_elapsed, 3),
                         "retrieval_elapsed_sec": round(retrieval_elapsed, 3),
                         "generation_elapsed_sec": round(generation_elapsed, 3),
+                        "retrieved_examples": retrieved_examples,
+                        "dropped_examples": dropped_examples,
                     }
                 )
                 continue
@@ -364,6 +377,9 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
             evaluation_elapsed = time.perf_counter() - evaluation_start
             total_score += result["score"]
             total_fix_success += result["fix_success"]
+            for case_detail in result["details"]:
+                case_detail["retrieved_examples"] = retrieved_examples
+                case_detail["dropped_examples"] = dropped_examples
             all_details.extend(result["details"])
             processed += 1
             total_elapsed = time.perf_counter() - record_start
@@ -392,6 +408,8 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
                     "stderr": f"record_error: {exc}",
                     "code": "",
                     "record_elapsed_sec": round(total_elapsed, 3),
+                    "retrieved_examples": retrieved_examples,
+                    "dropped_examples": dropped_examples,
                 }
             )
             continue
