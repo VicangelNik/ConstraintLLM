@@ -80,6 +80,65 @@ export CONSTRAINTLLM_API_KEY="YOUR_OPENAI_API_KEY"
 export CONSTRAINTLLM_MODEL="gpt-5"
 ```
 
+### Using OpenRouter
+
+Any OpenAI-compatible endpoint works, including [OpenRouter](https://openrouter.ai). Create a key at https://openrouter.ai/keys and set:
+
+```bash
+export CONSTRAINTLLM_API_BASE="https://openrouter.ai/api/v1"
+export CONSTRAINTLLM_API_KEY="YOUR_OPENROUTER_API_KEY"
+export CONSTRAINTLLM_MODEL="nvidia/nemotron-3-ultra-550b-a55b:free"
+```
+
+Notes:
+- `CONSTRAINTLLM_API_BASE` must end at `/v1`. Do not append `/chat/completions`; the client adds it.
+- Never commit your key. Export it in the shell instead of writing it into files.
+- `:free` models have strict rate limits and may return 429 errors. Do not set `CONSTRAINTLLM_PARALLEL_WORKERS`, and raise the retries:
+
+  ```bash
+  export CONSTRAINTLLM_REQUEST_RETRIES=5
+  export CONSTRAINTLLM_REQUEST_RETRY_BACKOFF=15
+  ```
+- `RAG` needs an embeddings endpoint, which OpenRouter does not provide for this setup. Point `CONSTRAINTLLM_EMBEDDING_API_BASE`, `CONSTRAINTLLM_EMBEDDING_API_KEY` and `CONSTRAINTLLM_EMBEDDING_MODEL` at an embedding provider. `DIRECT`, `COT`, `CARM` and `TOT` retrieval via tags do not need it.
+
+Model used in our runs: `nvidia/nemotron-3-ultra-550b-a55b:free`, `google/gemma-4-26b-a4b-it:free`.
+
+#### Troubleshooting
+
+Check which variables are set in the current shell (key length only, not the key):
+
+```bash
+echo "base=$CONSTRAINTLLM_API_BASE"
+echo "model=$CONSTRAINTLLM_MODEL"
+echo "key length=${#CONSTRAINTLLM_API_KEY}"
+```
+
+Verify the key is valid:
+
+```bash
+curl -s https://openrouter.ai/api/v1/auth/key -H "Authorization: Bearer $CONSTRAINTLLM_API_KEY"
+```
+
+Test a chat completion with the configured model:
+
+```bash
+curl -s https://openrouter.ai/api/v1/chat/completions \
+  -H "Authorization: Bearer $CONSTRAINTLLM_API_KEY" -H "Content-Type: application/json" \
+  -d "{\"model\":\"$CONSTRAINTLLM_MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}"
+```
+
+List available models:
+
+```bash
+curl -s https://openrouter.ai/api/v1/models | grep -o '"id":"[^"]*"' | head -50
+```
+
+Common errors:
+- `Missing Authentication header`: the key is empty in this shell. Re-export it in the same terminal where you run the pipeline.
+- `No module named 'openai'`: activate the virtual environment with `source .venv/bin/activate`.
+- 404 or `code_generation_failed_or_timed_out` after a fraction of a second: usually a wrong `CONSTRAINTLLM_API_BASE` or model name. The failed request's status and message are printed as `[llm] ... status=...`.
+- 429: rate limited; increase `CONSTRAINTLLM_REQUEST_RETRIES` and the backoff.
+
 ## Methods
 
 This release provides the following methods:
@@ -88,7 +147,7 @@ This release provides the following methods:
 - `COT`: generate PyCSP3 code with a chain-of-thought style coding prompt.
 - `RAG`: retrieve reference examples by embedding similarity between the current problem statement and the retrieval corpus.
 - `CARM`: retrieve reference examples by constraint-tag overlap.
-- `TOT`: retrieve references, generate multiple modelling plans, turn them into candidate programs, and keep the best candidate under a lightweight quick check.
+- `TOT`: retrieve references, generate multiple modeling plans, turn them into candidate programs, and keep the best candidate under a lightweight quick check.
 
 The bundled knowledge base at `data/knowledge_base.json` is intended for retrieval in `RAG`, `CARM`, and `TOT`. It is not part of the `IndusCP` test set itself.
 
