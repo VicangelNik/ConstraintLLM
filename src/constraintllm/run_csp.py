@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import datetime
 import difflib
 import os
+from pathlib import Path
 import subprocess
 import sys
 import time
@@ -175,10 +177,13 @@ def _carm_rerank_examples(problem_text: str, examples: list[dict], settings) -> 
 def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings,
                      embedding_retriever: EmbeddingRetriever | None = None) -> tuple[list[dict], list[str]]:
     """Prepare retrieved examples and tags for the selected method."""
+    # Never show the model the knowledge-base entry of the problem being solved.
+    retrieval_corpus = [item for item in retrieval_corpus if item.get("name") != record.name]
     if method == "RAG":
         if embedding_retriever is None:
             raise ValueError("RAG requires an embedding retriever")
-        return embedding_retriever.topk(problem_text, settings.topk), []
+        candidates = embedding_retriever.topk(problem_text, settings.topk + 1)
+        return [item for item in candidates if item.get("name") != record.name][: settings.topk], []
     if method in {"CARM", "TOT"}:
         tags = classify_tag(problem_text, preset_constraints=record.constraints, llm=llm)
         tag_topk = settings.topk * 2 if os.environ.get("CONSTRAINTLLM_RERANK_ENDPOINT", "").strip() else settings.topk

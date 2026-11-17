@@ -134,7 +134,7 @@ def run_program(tmp_dir: Path, command: list[str], code: str, time_limit: int) -
         if process is not None:
             terminate_process_group(process.pid)
             kill_java_by_markers(markers)
-        delete_log_xml_files(tmp_dir)
+        # delete_log_xml_files(tmp_dir)
 
 
 def extract_cost(output_text: str) -> str | None:

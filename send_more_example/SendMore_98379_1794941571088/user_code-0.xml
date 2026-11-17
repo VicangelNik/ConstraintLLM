@@ -1,0 +1,16 @@
+<instance format="XCSP3" type="CSP">
+  <variables>
+    <array id="x" note="Create a variable for each letter (domain 0..9)" size="[8]"> 0..9 </array>
+  </variables>
+  <constraints>
+    <allDifferent> x[] </allDifferent>
+    <intension note="Leading letters cannot be zero"> ne(x[6],0) </intension>
+    <intension> ne(x[2],0) </intension>
+    <intension> ne(x[2],0) </intension>
+    <sum note="Arithmetic constraint: word1 + word2 == word3">
+      <list> x[6] x[1] x[3] x[0] x[2] x[4..5] x[1..2] x[4] x[3] x[1] x[7] </list>
+      <coeffs> 1000 100 10 1 1000 100 10 1 -10000 -1000 -100 -10 -1 </coeffs>
+      <condition> (eq,0) </condition>
+    </sum>
+  </constraints>
+</instance>

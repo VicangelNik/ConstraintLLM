@@ -1,0 +1,60 @@
+
+[93mACE v2.6 [0m
+
+  [94minstance[0m
+    name:user_code-0
+    args:user_code-0.xml
+
+ [33m...Parsing[0m /Users/nikxyl/projects/master/ConstraintLLM/tmp/SendMore_98379_1794941571088/user_code-0.xml
+
+ [33m...Loading[0m variables
+
+ [33m...Loading[0m constraints
+
+  [94mdomains[0m
+    types:1  values:80  sizes:[10:8]
+  [94mvariables[0m
+    count:8  arrays:[x:8]  degrees:[2:6,3:1,4:1]
+  [94mconstraints[0m
+    count:5  specific:5  backtrackable:1  arities:[1:3,8:2]
+    unary:[Extension1:3]
+    non_unary:[AllDifferentComplete:1,SumWeightedEQ:1]
+    wck:0.06  cpu:0.204  mem:42M72
+
+ [33m...Building[0m solver
+
+  [94msolver[0m
+    nNotAC:1  decoder:Decoder1
+    wck:0.00  cpu:0.21  mem:48M363
+
+  [94mpreprocessing[0m
+    effs:6  entailed:3  values:32  removedByAC:48  singletons:3  unsat:false
+    wck:0.001  cpu:0.21  mem:48M363
+
+  [94msearch[0m
+[33m ...Discarding 3 singleton variables[0m
+    run1  dpts:0..0  robin:PickOnDom-First  effs:18  asgs:(5,noefs=0,fails=5)  fails:5  wrgs:5  wck:0.00
+    run2  dpts:0..1  robin:WdegOnDom-Last  effs:22  asgs:(2,noefs=0,fails=1)  fails:6  wrgs:6  wck:0.00  sols:1
+
+  [94mglobal[0m
+    effs:22
+    stop:REACHED_GOAL  wrgs:6  sols:1  sol1Cpu:0.212
+    wck:0.01  cpu:0.212  mem:48M363
+
+
+  Solution 1 in JSON-like format:
+   {'x': [7, 5, 1, 6, 0, 8, 9, 2]}
+
+[92ms SATISFIABLE[0m
+[92m
+v[0m  <instantiation id='sol1' type='solution'> <list> x[] </list> <values> 7 5 1 6 0 8 9 2 </values> </instantiation>
+[92m
+d FOUND SOLUTIONS[0m  1
+[92m
+d WRONG DECISIONS[0m  6  (1500.00 wrg/s)
+
+[92md WCK SOL 1[0m  0.01
+[92md WCK SOL-1[0m  0.01
+[92md CPU       [0m 0.214
+
+[91md INCOMPLETE EXPLORATION[0m

@@ -72,7 +72,7 @@ def get_settings() -> Settings:
         prompt_problem_max_chars=_get_int_env("CONSTRAINTLLM_PROMPT_PROBLEM_MAX_CHARS", 12000),
         retrieval_example_problem_max_chars=_get_int_env("CONSTRAINTLLM_RETRIEVAL_EXAMPLE_PROBLEM_MAX_CHARS", 1800),
         retrieval_example_code_max_chars=_get_int_env("CONSTRAINTLLM_RETRIEVAL_EXAMPLE_CODE_MAX_CHARS", 2800),
-        retrieval_total_max_chars=_get_int_env("CONSTRAINTLLM_RETRIEVAL_TOTAL_MAX_CHARS", 12000),
+        retrieval_total_max_chars=_get_int_env("CONSTRAINTLLM_RETRIEVAL_TOTAL_MAX_CHARS", 30000),
         fix_problem_max_chars=_get_int_env("CONSTRAINTLLM_FIX_PROBLEM_MAX_CHARS", 4000),
         fix_code_max_chars=_get_int_env("CONSTRAINTLLM_FIX_CODE_MAX_CHARS", 6000),
         fix_input_max_chars=_get_int_env("CONSTRAINTLLM_FIX_INPUT_MAX_CHARS", 2500),

@@ -1436,5 +1436,14 @@
       "NoOverlap",
       "Table"
     ]
+  },
+  {
+    "name": "SendMore",
+    "problem": "**Problem Description:**\nThis is a cryptarithmetic (alphametic) puzzle. Each distinct letter in three given words stands for a distinct decimal digit (0-9). Replacing the letters by their digits must make the addition word1 + word2 = word3 hold as an ordinary arithmetic equation. The first letter of each word cannot be 0. For example, SEND + MORE = MONEY is solved by S=9, E=5, N=6, D=7, M=1, O=0, R=8, Y=2, since 9567 + 1085 = 10652.\n\n**Input Format:**\nA JSON object with one field `words`: a list of three lowercase strings [word1, word2, word3]. The puzzle is word1 + word2 = word3. Each puzzle has exactly one solution.\n\n**Output Format:**\nThe program must solve the model and then print the numeric value of word3 under the solution, on a line of the form `my answer is <value>` (for SEND + MORE = MONEY the line is `my answer is 10652`). Print only digits after `my answer is`, with no trailing period or other text on that line.\n",
+    "code": "from pycsp3 import *\n\nwords = [w.lower() for w in data]\nword1, word2, word3 = words\nletters = sorted(set(\"\".join(words)))\npos = {c: i for i, c in enumerate(letters)}\n\n# x[i] is the digit assigned to the ith distinct letter\nx = VarArray(size=len(letters), dom=range(10))\n\n\ndef value(word):\n    return Sum(x[pos[c]] * 10 ** i for i, c in enumerate(reversed(word)))\n\n\nsatisfy(\n    # distinct letters take distinct digits\n    AllDifferent(x),\n\n    # leading letters cannot be 0\n    [x[pos[w[0]]] > 0 for w in words],\n\n    # the equation\n    value(word1) + value(word2) == value(word3)\n)\n\nif solve() is SAT:\n    solution = values(x)\n    print(\"my answer is\", int(\"\".join(str(solution[pos[c]]) for c in word3)))\n",
+    "constraints": [
+      "AllDifferent",
+      "Sum"
+    ]
   }
 ]
