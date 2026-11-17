@@ -1,0 +1,17 @@
+{
+  "dataset": "IndusCP",
+  "method": "CARM",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "api_base": "https://openrouter.ai/api/v1",
+  "time_limit": 60,
+  "topk": 4,
+  "revision_times": 4,
+  "cases_per_problem": 5,
+  "shard_total": 1,
+  "shard_index": 0,
+  "processed_problems": 1,
+  "skipped_problems": 0,
+  "total_score": 4,
+  "total_fix_success": 4,
+  "experiment_elapsed_sec": 473.91
+}
