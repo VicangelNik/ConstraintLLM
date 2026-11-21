@@ -172,6 +172,12 @@ Example run:
 PYTHONPATH=src python -m constraintllm.run_csp --method CARM --max-items 1
 ```
 
+Run specific problems with `--problem` (comma-separated, case-insensitive). It is applied before `--max-items`, so `--problem CVRP,SetPacking --max-items 1` runs one problem from that set. Use `--list-problems` to see the available names.
+
+```bash
+PYTHONPATH=src python -m constraintllm.run_csp --method COT --problem CVRP,SetPacking
+```
+
 ### Retry settings
 
 Two variables control how the pipeline reacts when a model request fails (implemented in `src/constraintllm/llm.py`):

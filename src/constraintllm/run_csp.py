@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 import datetime
+import difflib
 import os
-from pathlib import Path
 import subprocess
 import sys
 import time
+from dataclasses import replace
+from pathlib import Path
 
 from tqdm import tqdm
 
 from .classify_tag import classify_tag
-from .config import CARM_WITH_CONSTRAINTS_SYSTEM_MESSAGE, COT_SYSTEM_MESSAGE, OUTPUT_ROOT, SYSTEM_MESSAGE_DIRECT, TOT_THOUGHT_SYSTEM_MESSAGE, get_settings
+from .config import CARM_WITH_CONSTRAINTS_SYSTEM_MESSAGE, COT_SYSTEM_MESSAGE, OUTPUT_ROOT, SYSTEM_MESSAGE_DIRECT, \
+    TOT_THOUGHT_SYSTEM_MESSAGE, get_settings
 from .data_loader import load_induscp_records, load_retrieval_corpus
 from .embedding_retrieval import EmbeddingRetriever
 from .llm import get_llm
@@ -58,8 +60,39 @@ def _get_shard_indices(workers: int) -> list[int]:
     return shard_indices
 
 
-def _slice_records(records: list, max_items: int) -> list:
-    """Slice records by problem limit and shard settings."""
+def _parse_problem_filter(problem: str) -> list[str]:
+    """Split a comma-separated problem filter into unique, ordered names."""
+    names: list[str] = []
+    for part in problem.split(","):
+        name = part.strip()
+        if name and name not in names:
+            names.append(name)
+    return names
+
+
+def _validate_problem_filter(wanted: list[str], records: list) -> list[str]:
+    """Resolve requested names (case-insensitive) to exact record names or raise with suggestions."""
+    by_lower = {record.name.lower(): record.name for record in records}
+    resolved: list[str] = []
+    errors: list[str] = []
+    for name in wanted:
+        exact = by_lower.get(name.lower())
+        if exact is None:
+            close = difflib.get_close_matches(name, [r.name for r in records], n=3, cutoff=0.5)
+            errors.append(f"{name}" + (f" (did you mean: {', '.join(close)}?)" if close else ""))
+        elif exact not in resolved:
+            resolved.append(exact)
+    if errors:
+        raise ValueError(f"Unknown problem(s) in --problem: {'; '.join(errors)}. Use --list-problems to see names.")
+    return resolved
+
+
+def _slice_records(records: list, max_items: int, problem: str = "") -> list:
+    """Filter by problem name, limit to the first N, then apply the shard split."""
+    wanted = _parse_problem_filter(problem)
+    if wanted:
+        allowed = set(_validate_problem_filter(wanted, records))
+        records = [record for record in records if record.name in allowed]
     sliced = records[:max_items] if max_items > 0 else list(records)
     shard_total = _get_int_env("CONSTRAINTLLM_SHARD_TOTAL", 1)
     shard_index = _get_int_env("CONSTRAINTLLM_SHARD_INDEX", 0)
@@ -139,7 +172,8 @@ def _carm_rerank_examples(problem_text: str, examples: list[dict], settings) -> 
     return ranked_examples or examples[: settings.topk]
 
 
-def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[list[dict], list[str]]:
+def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings,
+                     embedding_retriever: EmbeddingRetriever | None = None) -> tuple[list[dict], list[str]]:
     """Prepare retrieved examples and tags for the selected method."""
     if method == "RAG":
         if embedding_retriever is None:
@@ -154,9 +188,12 @@ def prepare_examples(method: str, problem_text: str, record, retrieval_corpus: l
     return [], []
 
 
-def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings, embedding_retriever: EmbeddingRetriever | None = None) -> tuple[str, list[str], list[dict], list[dict]]:
+def build_method_prompt(method: str, problem_text: str, record, retrieval_corpus: list[dict], llm, settings,
+                        embedding_retriever: EmbeddingRetriever | None = None) -> tuple[
+    str, list[str], list[dict], list[dict]]:
     """Build the input prompt for the selected method."""
-    examples, tags = prepare_examples(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
+    examples, tags = prepare_examples(method, problem_text, record, retrieval_corpus, llm, settings,
+                                      embedding_retriever=embedding_retriever)
     if method == "CARM":
         prefix, used = build_carm_reference_prefix(examples, settings)
         prompt = prefix + "The problem:\n" + problem_text if examples else "The problem:\n" + problem_text
@@ -294,13 +331,13 @@ def generate_code_with_tot(record, problem_text: str, base_prompt: str, llm, set
 
 
 @profiler
-def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
+def run_experiment(method: str, max_items: int = 0, problem: str = "") -> tuple[dict, list[dict]]:
     """Run one experiment pass."""
     experiment_start = time.perf_counter()
     settings = get_settings()
     llm = get_llm(settings)
     records = load_induscp_records()
-    records = _slice_records(records, max_items)
+    records = _slice_records(records, max_items, problem)
 
     retrieval_corpus = []
     embedding_retriever: EmbeddingRetriever | None = None
@@ -327,7 +364,8 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
         try:
             problem_text = clip_text(record.problem, settings.prompt_problem_max_chars)
             retrieval_start = time.perf_counter()
-            prompt, tags, examples, dropped = build_method_prompt(method, problem_text, record, retrieval_corpus, llm, settings, embedding_retriever=embedding_retriever)
+            prompt, tags, examples, dropped = build_method_prompt(method, problem_text, record, retrieval_corpus, llm,
+                                                                  settings, embedding_retriever=embedding_retriever)
             retrieval_elapsed = time.perf_counter() - retrieval_start
             retrieved_examples = [item.get("name", "") for item in examples]
             dropped_examples = [item.get("name", "") for item in dropped]
@@ -424,6 +462,8 @@ def run_experiment(method: str, max_items: int = 0) -> tuple[dict, list[dict]]:
         "topk": settings.topk,
         "revision_times": settings.revision_times,
         "cases_per_problem": settings.cases_per_problem,
+        "max_items": max_items,
+        "problem_filter": _parse_problem_filter(problem),
         "shard_total": _get_int_env("CONSTRAINTLLM_SHARD_TOTAL", 1),
         "shard_index": _get_int_env("CONSTRAINTLLM_SHARD_INDEX", 0),
         "processed_problems": processed,
@@ -444,7 +484,7 @@ def _get_parallel_workers() -> int:
     return max(1, _get_int_env("CONSTRAINTLLM_PARALLEL_WORKERS", 1))
 
 
-def _run_parallel_by_shard_if_needed(method: str, max_items: int) -> bool:
+def _run_parallel_by_shard_if_needed(method: str, max_items: int, problem: str = "") -> bool:
     """Spawn child shard processes from the parent process when needed."""
     workers = _get_parallel_workers()
     if workers <= 1:
@@ -479,6 +519,8 @@ def _run_parallel_by_shard_if_needed(method: str, max_items: int) -> bool:
                 "--max-items",
                 str(max_items),
             ]
+            if problem:
+                cmd += ["--problem", problem]
             proc = subprocess.Popen(
                 cmd,
                 cwd=package_root,
@@ -536,6 +578,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run constraintllm CSP experiments on IndusCP.")
     parser.add_argument("--method", choices=["DIRECT", "COT", "RAG", "CARM", "TOT"], default="COT")
     parser.add_argument("--max-items", type=int, default=0, help="Only run the first N problems.")
+    parser.add_argument("--problem", default="",
+                        help="Comma-separated problem names to run (case-insensitive). Applied before --max-items.")
+    parser.add_argument("--list-problems", action="store_true", help="Print available problem names and exit.")
     return parser
 
 
@@ -543,9 +588,18 @@ def main() -> None:
     """Run the command-line entry point."""
     parser = build_parser()
     args = parser.parse_args()
-    if _run_parallel_by_shard_if_needed(args.method, args.max_items):
+    records = load_induscp_records()
+    if args.list_problems:
+        print("\n".join(record.name for record in records))
         return
-    summary, details = run_experiment(args.method, max_items=args.max_items)
+    try:
+        # Validate once in the parent so a typo fails fast instead of in every shard.
+        _validate_problem_filter(_parse_problem_filter(args.problem), records)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if _run_parallel_by_shard_if_needed(args.method, args.max_items, args.problem):
+        return
+    summary, details = run_experiment(args.method, max_items=args.max_items, problem=args.problem)
     summary_path, details_path = save_experiment_outputs(summary, details)
     print(f"Summary saved to: {summary_path}")
     print(f"Details saved to: {details_path}")
